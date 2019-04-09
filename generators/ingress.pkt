@@ -1,0 +1,31 @@
+/properties:
+  label: app
+  name: noname
+  host: null
+  port: 0
+  path: /
+  oidc: null
+  public: "false"
+  health: /health
+/schema:
+  properties:
+    host:
+      type: string
+---
+/template: |
+  apiVersion: extensions/v1beta1
+  kind: Ingress
+  metadata:
+    name: <<<= name >>>
+    namespace: !js namespace
+    labels:
+      <<<= label >>>: <<<= name >>>
+  spec:
+    rules:
+      - host: <<<= host.split('.')[0] >>>.<<<= host.split('.').splice(1).join('.') >>>
+        http:
+          paths:
+            - path: <<<= path >>>*
+              backend:
+                serviceName: <<<= name >>>
+                servicePort: <<<= port >>>

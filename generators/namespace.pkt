@@ -1,0 +1,8 @@
+/properties:
+  namespace: null
+---
+/template: |
+  apiVersion: v1
+  kind: Namespace
+  metadata:
+    name: !js namespace

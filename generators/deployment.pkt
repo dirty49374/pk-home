@@ -1,0 +1,55 @@
+/properties:
+  port: 0
+  label: app
+  name: ""
+  image: null
+  kind: Deployment
+
+/schema:
+  description: basic deployment example
+  properties:
+    image:
+      type: string
+      description: container image of deployment
+    name:
+      type: string
+      description: name of deployment, image name will be used if not specified (OPTIONAL)
+    kind:
+      type: string
+      description: kind of deployment, default is 'Deployment' (OPTIONAL)
+    port:
+      type: number
+      description: specify port number to open or zero (OPTIONAL)
+    label:
+      type: string
+      description: default app label name (OPTIONAL)
+  required: [image]
+---
+/assign:
+  name: !js "name ? name : image.split(':')[0].split('/').slice(-1)[0]"
+---
+/template: |
+  apiVersion: apps/v1
+  kind: <<<= kind >>>
+  metadata:
+    name: <<<= name >>>
+    namespace: !js namespace
+    labels:
+      <<<= label >>>: <<<= name >>>
+    annotations: {}
+  spec:
+    selector:
+      matchLabels:
+        <<<= label >>>: <<<= name >>>
+    template:
+      metadata:
+        labels:
+          <<<= label >>>: <<<= name >>>
+      spec:
+        containers:
+        - name: <<<= name >>>
+          image: <<<= image >>>
+          <<<_ if (port) { >>>
+          ports:
+          - containerPort: <<<= port >>>
+          <<<_ } >>>

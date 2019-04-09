@@ -1,0 +1,64 @@
+/properties:
+  kind: Deployment
+  name: null
+  image: null
+  label: app
+  port: 0
+  service: ClusterIP
+  host: null
+  path: /
+  public: "false"
+
+/schema:
+  title: create Deployment or DaemonSet or StatefulSet with Service, Ingress
+  properties:
+    kind:
+      description: Deployment or DaemonSet or StatefulSet
+      type: string
+      enum: [Deployment, DaemonSet, StatefulSet]
+    name:
+      description: name of deployment
+      type: [string, "null"]
+    image:
+      description: container image (prefix @ means image from pubg repository)
+      type: string
+    label:
+      description: default label name
+      type: string
+    port:
+      description: tcp port number to expose. if specified, service will created.
+      type: number
+    service:
+      description: service type
+      type: string
+      enum: [ClusterIP, NodePort, LoadBalancer, None]
+    host:
+      description: host name of ingress. if specified, ingress will created.
+      type: [string, "null"]
+    path:
+      description: path of ingress
+      type: string
+    public:
+      description: public ingress
+      type: string
+      enum: ["true", "false"]
+  required: [image]
+---
+/assign:
+  name: !js "name ? name : image.split(':')[0].split('/').slice(-1)[0]"
+---
+/if: !js host && !port
+/assign:
+  port: 80
+---
+/if: !js host
+/assign:
+  service: NodePort
+---
+/include: deployment.pkt
+---
+/if: !js port
+/include: service.pkt
+---
+/if: !js port && host
+/include: ingress.pkt
