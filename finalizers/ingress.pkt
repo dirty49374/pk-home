@@ -1,0 +1,21 @@
+/select: Ingress
+/foreach: !js |
+  const annos = $.object.metadata.annotations || ($.object.metadata.annotations = {});
+
+  for (const rule of $.object.spec.rules) {
+    if (rule.host.endsWith(".sdfj.kr")) {
+      annos['external-dns.alpha.kubernetes.io/alias'] = 'true';
+      annos['external-dns.alpha.kubernetes.io/hostname'] = rule.host;
+      annos['external-dns.alpha.kubernetes.io/target'] = 'www.sdfj.kr';
+      annos['external-dns.alpha.kubernetes.io/ttl'] = '120';
+
+      const tls = $.object.spec.tls || ($.object.spec.tls = []);
+      if (!tls[0]) {
+        tls.push({
+          hosts: []
+        });
+      }
+
+      tls[0].hosts.push(rule.host);
+    }
+  }
