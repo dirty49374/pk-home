@@ -1,0 +1,31 @@
+/schema:
+  title: pk.io/keel annotation
+  description: |
+    add init container to increate system resource limit
+    documentation) https://keel.sh/v1/guide/documentation.html
+    usage)
+      pk.io/keel: ""
+      pk.io/keel: policy=major; notify=test-channel-swshin; schedule=1m
+---
+/select:
+  - Deployment !pk.io/keel=*
+  - StatefulSet !pk.io/keel=*
+  - DaemonSet !pk.io/keel=*
+  - Pod !pk.io/keel=*
+/foreach: !ls |
+  kvps = $.parseKvps $.annotation "pk.io/keel"
+
+  policy = kvps.policy || "major"
+  notify = kvps.notify || "test-channel-swshin"
+  schedule = kvps.schedule || "1m"
+
+  labels = $.object.{}metadata.{}labels
+
+  labels["keel.sh/policy"] = policy
+  labels["keel.sh/trigger"] = "poll"
+  labels["keel.sh/match-tag"] = "true"
+
+  annotations = $.object.{}metadata.{}annotations
+
+  annotations["keel.sh/pollSchedule"] = "@every #{schedule}"
+  annotations["keel.sh/notify"] = notify

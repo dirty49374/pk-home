@@ -1,2 +1,4 @@
 /apply: finalizers/ingress.pkt
 ---
+/apply: finalizers/keel.pkt
+---
