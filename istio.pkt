@@ -1,0 +1,9 @@
+/require: istio.js
+---
+/script: !js |
+  const yaml = $.dumpYamlAll($.objects)
+  const injectedYaml = istio.inject(yaml)
+  const objects = $.parseYamlAll(injectedYaml).filter(o => !!o)
+
+  $.objects.splice(0, $.objects.length)
+  $.objects.push(...objects)
