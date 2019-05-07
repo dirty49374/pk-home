@@ -6,7 +6,7 @@
     if (rule.host.endsWith(".sdfj.kr")) {
       annos['external-dns.alpha.kubernetes.io/alias'] = 'true';
       annos['external-dns.alpha.kubernetes.io/hostname'] = rule.host;
-      annos['external-dns.alpha.kubernetes.io/target'] = 'www.sdfj.kr';
+      annos['external-dns.alpha.kubernetes.io/target'] = 'sdfj.kr';
       annos['external-dns.alpha.kubernetes.io/ttl'] = '120';
 
       const tls = $.object.spec.tls || ($.object.spec.tls = []);
@@ -17,5 +17,41 @@
       }
 
       tls[0].hosts.push(rule.host);
+
+      const secretName = rule.host.replace(/\./g, '-')
+
+      tls[0].secretName = secretName;
+
+      $.objects.push({
+        "apiVersion": "certmanager.k8s.io/v1alpha1",
+        "kind": "Certificate",
+        "metadata": {
+          "name": secretName,
+          "namespace": namespace
+        },
+        "spec": {
+          "secretName": secretName,
+          "issuerRef": {
+            "name": "letsencrypt-prod",
+            "kind": "ClusterIssuer"
+          },
+          "commonName": rule.host,
+          "dnsNames": [
+            rule.host
+          ],
+          "acme": {
+            "config": [
+              {
+                "dns01": {
+                  "provider": "cf-dns"
+                },
+                "domains": [
+                  rule.host
+                ]
+              }
+            ]
+          }
+        }
+      })
     }
   }
